@@ -1,27 +1,53 @@
-@metadata_processor
-def add_apt_packages(metadata):
-    if node.has_bundle("apt"):
-        metadata.setdefault('apt', {})
-        metadata['apt'].setdefault('packages', {})
+defaults = {
+}
 
-        metadata['apt']['packages']['curl'] = {'installed': True}
-        metadata['apt']['packages']['ca-certificates'] = {'installed': True}
+if node.has_bundle("apt"):
+    defaults['apt'] = {
+        'packages': {
+            'curl': {'installed': True},
+            'ca-certificates': {'installed': True},
+        }
+    }
 
-    return metadata, DONE
 
-
-@metadata_processor
+@metadata_reactor
 def add_sudo_group_processor(metadata):
-    if 'users' in metadata:
-        for username in metadata['users'].keys():
-            if metadata['users'][username].get('docker', False):
-                add_groups = metadata['users'][username].get('add_groups', [])
+    users = {}
+    for username in metadata.get('users').keys():
+        if metadata.get('users/{}/docker'.format(username), False):
+            add_groups = metadata.get('users/{}/add_groups'.format(username), [])
 
-                if 'docker' not in add_groups:
-                    add_groups.append('docker')
+            if 'docker' not in add_groups:
+                add_groups.append('docker')
 
-                metadata['users'][username]['add_groups'] = add_groups
+            users[username] = {
+                'add_groups': add_groups,
+            }
 
-        return metadata, DONE
+    return {
+        'users': users,
+    }
 
-    return metadata, RUN_ME_AGAIN
+
+# @metadata_processor
+# def ignore_iptables_chains(metadata):
+#     if node.has_bundle('iptables'):
+#         metadata.setdefault('iptables', {})
+#         metadata['iptables'].setdefault('ignored', {})
+#         metadata['iptables']['ignored'].setdefault('chains', [])
+#         metadata['iptables']['ignored'].setdefault('rules', [])
+#
+#         metadata['iptables']['ignored']['chains'] += [
+#             {'table': 'filter', 'chain': 'DOCKER'},
+#             {'table': 'filter', 'chain': 'DOCKER-ISOLATION'},
+#             {'table': 'filter', 'chain': 'DOCKER-USER'},
+#         ]
+#
+#         metadata['iptables']['ignored']['rules'] += [
+#             {'chain': 'FORWARD', 'table': 'filter', 'output': 'docker.*'},
+#             {'chain': 'FORWARD', 'table': 'filter', 'input': 'docker.*'},
+#             {'chain': 'FORWARD', 'table': 'filter', 'jump': 'DOCKER-ISOLATION'},
+#             {'chain': 'FORWARD', 'table': 'filter', 'jump': 'DOCKER-USER'},
+#         ]
+#
+#     return metadata, DONE
