@@ -1,5 +1,9 @@
-COMPOSE_VER = '1.24.0'
-COMPOSE_SUM = 'bee6460f96339d5d978bb63d17943f773e1a140242dfa6c941d5e020a302c91b'
+COMPOSE_VER = node.metadata.get('docker', {}).get('compose_version', '1.27.4')
+
+composer_check_sums = {
+    '1.24.0': 'bee6460f96339d5d978bb63d17943f773e1a140242dfa6c941d5e020a302c91b',
+    '1.27.4': '04216d65ce0cd3c27223eab035abfeb20a8bef20259398e3b9d9aa8de633286d',
+}
 
 pkg_apt = {
     'docker-ce': {
@@ -13,7 +17,7 @@ pkg_apt = {
     }
 }
 
-svc_systemv = {
+svc_systemd = {
     'docker': {
       'running': True,
       'needs': ['pkg_apt:docker-ce']
@@ -37,18 +41,18 @@ actions = {
         'unless': 'apt-key list | grep "Docker Release (CE deb) <docker@docker.com>"'
     },
     'make_executable': {
-        'command': 'chmod +x /usr/local/bin/docker-compose',
+        'command': f'chmod +x /usr/local/bin/docker-compose-{COMPOSE_VER}'
+                    '&& rm -f /usr/local/bin/docker-compose '
+                    f'&& ln -s docker-compose-{COMPOSE_VER} /usr/local/bin/docker-compose',
         'triggered': True,
     }
 }
 
 downloads = {
-    '/usr/local/bin/docker-compose': {
-        'url': 'https://github.com/docker/compose/releases/download/{version}/docker-compose-Linux-x86_64'.format(
-            version=COMPOSE_VER,
-        ),
-        'sha256': COMPOSE_SUM,
+    f'/usr/local/bin/docker-compose-{COMPOSE_VER}': {
+        'url': f'https://github.com/docker/compose/releases/download/{COMPOSE_VER}/docker-compose-Linux-x86_64',
+        'sha256': composer_check_sums[COMPOSE_VER],
         'needs': ['pkg_apt:ca-certificates'],
         'triggers': ['action:make_executable'],
-    }
+    },
 }
