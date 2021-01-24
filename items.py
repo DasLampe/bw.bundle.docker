@@ -34,17 +34,19 @@ files = {
     }
 }
 
+# TODO: move this to Keychain file
 actions = {
     'docker_install_apt_key': {
         'command': 'curl -L https://download.docker.com/linux/debian/gpg | apt-key add -',
         'needs': ['pkg_apt:curl'],
         'unless': 'apt-key list | grep "Docker Release (CE deb) <docker@docker.com>"'
     },
-    'make_executable': {
-        'command': f'chmod +x /usr/local/bin/docker-compose-{COMPOSE_VER}'
-                    '&& rm -f /usr/local/bin/docker-compose '
-                    f'&& ln -s docker-compose-{COMPOSE_VER} /usr/local/bin/docker-compose',
-        'triggered': True,
+}
+
+symlinks = {
+    '/usr/local/bin/docker-compose': {
+        'target': f'docker-compose-{COMPOSE_VER}',
+        'needs': [f'download:/usr/local/bin/docker-compose-{COMPOSE_VER}', ],
     }
 }
 
@@ -53,6 +55,6 @@ downloads = {
         'url': f'https://github.com/docker/compose/releases/download/{COMPOSE_VER}/docker-compose-Linux-x86_64',
         'sha256': composer_check_sums[COMPOSE_VER],
         'needs': ['pkg_apt:ca-certificates'],
-        'triggers': ['action:make_executable'],
+        'mode': '0755',
     },
 }
