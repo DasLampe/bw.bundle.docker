@@ -5,43 +5,41 @@ composer_check_sums = {
     '1.27.4': '04216d65ce0cd3c27223eab035abfeb20a8bef20259398e3b9d9aa8de633286d',
 }
 
-pkg_apt = {
-    'docker-ce': {
-        'needs': [
-            'action:docker_install_apt_key',
-            'file:/etc/apt/sources.list.d/docker-ce.list'
-        ]
-    },
-    'docker-compose': {
-        'installed': False
-    }
-}
+files = {}
 
-svc_systemd = {
-    'docker': {
-      'running': True,
-      'needs': ['pkg_apt:docker-ce']
+if node.has_bundle('apt'):
+    files['/etc/apt/sources.list.d/docker-ce.list'] = {
+        'content': 'deb [arch=amd64] https://download.docker.com/linux/debian {release_name} stable\n'.format(
+            release_name=node.metadata.get(node.os).get('release_name')
+        ),
+        'content_type': 'text',
+        'needs': ['file:/etc/apt/trusted.gpg.d/docker-ce.gpg', ],
+        'triggers': ["action:force_update_apt_cache", ],
     }
-}
 
-files = {
-    '/etc/apt/sources.list.d/docker-ce.list': {
-      'owner': 'root',
-      'group': 'root',
-      'mode': '0444',
-      'needs': ['action:docker_install_apt_key'],
-      'triggers': ['action:update_apt_cache']
+    files['/etc/apt/trusted.gpg.d/docker-ce.gpg'] = {
+        'content_type': 'binary',
     }
-}
 
-# TODO: move this to Keychain file
-actions = {
-    'docker_install_apt_key': {
-        'command': 'curl -L https://download.docker.com/linux/debian/gpg | apt-key add -',
-        'needs': ['pkg_apt:curl'],
-        'unless': 'apt-key list | grep "Docker Release (CE deb) <docker@docker.com>"'
-    },
-}
+    svc_systemd = {
+        'docker': {
+            'running': True,
+            'needs': ['pkg_apt:docker-ce']
+        }
+    }
+
+    pkg_apt = {
+        'docker-ce': {
+            'needs': [
+                'file:/etc/apt/trusted.gpg.d/docker-ce.gpg',
+                'file:/etc/apt/sources.list.d/docker-ce.list'
+            ]
+        },
+        'docker-compose': {
+            'installed': False
+        }
+    }
+
 
 symlinks = {
     '/usr/local/bin/docker-compose': {
