@@ -1,8 +1,9 @@
-COMPOSE_VER = node.metadata.get('docker', {}).get('compose_version', '1.27.4')
+COMPOSE_VER = node.metadata.get('docker', {}).get('compose_version', '1.29.2')
 
 composer_check_sums = {
     '1.24.0': 'bee6460f96339d5d978bb63d17943f773e1a140242dfa6c941d5e020a302c91b',
     '1.27.4': '04216d65ce0cd3c27223eab035abfeb20a8bef20259398e3b9d9aa8de633286d',
+    '1.29.2': 'f3f10cf3dbb8107e9ba2ea5f23c1d2159ff7321d16f0a23051d68d8e2547b323',
 }
 
 files = {}
