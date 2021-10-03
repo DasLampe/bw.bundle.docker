@@ -57,3 +57,8 @@ downloads = {
         'mode': '0755',
     },
 }
+
+if node.metadata.get('docker', {}).get('daemon_config', {}):
+    files['/etc/docker/daemon.json'] = {
+        'content': json.dumps(node.metadata.get('docker', {}).get('daemon_config', {}), indent=4)
+    }
