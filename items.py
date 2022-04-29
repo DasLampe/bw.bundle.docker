@@ -10,8 +10,9 @@ files = {}
 
 if node.has_bundle('apt'):
     files['/etc/apt/sources.list.d/docker-ce.list'] = {
-        'content': 'deb [arch=amd64] https://download.docker.com/linux/debian {release_name} stable\n'.format(
-            release_name=node.metadata.get(node.os).get('release_name')
+        'content': 'deb [arch={arch}] https://download.docker.com/linux/debian {release_name} stable\n'.format(
+            release_name=node.metadata.get(node.os).get('release_name'),
+            arch=node.run("dpkg --print-architecture").stdout.decode('UTF-8').strip()
         ),
         'content_type': 'text',
         'needs': ['file:/etc/apt/trusted.gpg.d/docker-ce.gpg', ],
