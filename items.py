@@ -29,6 +29,30 @@ if node.has_bundle('apt'):
                 'file:/etc/apt/sources.list.d/docker-ce.list'
             ]
         },
+        'docker-ce-cli': {
+            'needs': [
+                'file:/etc/apt/trusted.gpg.d/docker-ce.gpg',
+                'file:/etc/apt/sources.list.d/docker-ce.list'
+            ]
+        },
+        'containerd.io': {
+            'needs': [
+                'file:/etc/apt/trusted.gpg.d/docker-ce.gpg',
+                'file:/etc/apt/sources.list.d/docker-ce.list'
+            ]
+        },
+        'docker-buildx-plugin': {
+            'needs': [
+                'file:/etc/apt/trusted.gpg.d/docker-ce.gpg',
+                'file:/etc/apt/sources.list.d/docker-ce.list'
+            ]
+        },
+        'docker-compose-plugin': {
+            'needs': [
+                'file:/etc/apt/trusted.gpg.d/docker-ce.gpg',
+                'file:/etc/apt/sources.list.d/docker-ce.list'
+            ],
+        },
     }
 
 if node.metadata.get('docker', {}).get('daemon_config', {}):
